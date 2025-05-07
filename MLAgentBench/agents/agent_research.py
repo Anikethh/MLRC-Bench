@@ -3,7 +3,6 @@ import os
 import sys
 import anthropic
 import json
-import glob
 from MLAgentBench.LLM import complete_text_fast, complete_text
 from MLAgentBench.schema import Action
 from .agent import Agent
@@ -58,44 +57,18 @@ class ResearchAgent(Agent):
         self.initial_prompt = initial_prompt.format(tools_prompt=self.tools_prompt, tool_names=self.prompt_tool_names,  task_description=env.research_problem, format_prompt="\n".join([f"{k}: {format_prompt_dict[k]}" for k in self.valid_format_entires]))
 
     def run(self, env):
-        agent_checkpoint_file_path = None
-        if self.args.resume:
-            if os.path.isfile(self.args.resume):
-                agent_checkpoint_file_path = self.args.resume
-            elif os.path.isdir(self.args.resume):
-                print(f"Resume path {self.args.resume} is a directory. Searching for agent checkpoint file...", file=sys.stderr)
-                # Search for agent_X_Y.json files in agent_log subdirectory, sort them to get the latest
-                agent_log_dir = os.path.join(self.args.resume, "agent_log")
-                if not os.path.isdir(agent_log_dir):
-                    print(f"Error: agent_log directory not found in {self.args.resume}. Cannot resume agent state.", file=sys.stderr)
-                else:
-                    checkpoints = sorted(
-                        glob.glob(os.path.join(agent_log_dir, "agent_*.json")),
-                        key=lambda f: tuple(map(int, os.path.basename(f).replace("agent_", "").replace(".json", "").split("_"))),
-                        reverse=True
-                    )
-                    if checkpoints:
-                        agent_checkpoint_file_path = checkpoints[0]
-                        print(f"Found agent checkpoint: {agent_checkpoint_file_path}", file=sys.stderr)
-                    else:
-                        print(f"No agent checkpoint files (agent_*.json) found in {agent_log_dir}. Cannot resume agent state.", file=sys.stderr)
-            else:
-                print(f"Resume path {self.args.resume} is not a valid file or directory. Starting fresh.", file=sys.stderr)
-
-        if agent_checkpoint_file_path and os.path.exists(agent_checkpoint_file_path):
-            print(f"Attempting to resume agent state from checkpoint: {agent_checkpoint_file_path}", file=sys.stderr)
+        if self.args.resume and os.path.exists(self.args.resume):
+            print(f"Attempting to resume from checkpoint: {self.args.resume}", file=sys.stderr)
             try:
-                with open(agent_checkpoint_file_path, 'r') as f:
+                with open(self.args.resume, 'r') as f:
                     checkpoint_data = json.load(f)
                 if 'history_steps' in checkpoint_data:
                     self.history_steps = checkpoint_data['history_steps']
                     print(f"Successfully loaded {len(self.history_steps)} history steps. Current step will be {len(self.history_steps)}.", file=sys.stderr)
                 else:
-                    print(f"Checkpoint file {agent_checkpoint_file_path} does not contain 'history_steps'. Starting fresh.", file=sys.stderr)
+                    print(f"Checkpoint file {self.args.resume} does not contain 'history_steps'. Starting fresh.", file=sys.stderr)
             except Exception as e:
-                print(f"Error loading checkpoint {agent_checkpoint_file_path}: {e}. Starting fresh.", file=sys.stderr)
-        elif self.args.resume: # self.args.resume was set, but we couldn't find/load the agent file
-            print(f"Could not load agent state from resume path {self.args.resume}. Starting fresh.", file=sys.stderr)
+                print(f"Error loading checkpoint {self.args.resume}: {e}. Starting fresh.", file=sys.stderr)
 
         last_steps = self.args.max_steps_in_context
         last_observation_step = self.args.max_observation_steps_in_context
