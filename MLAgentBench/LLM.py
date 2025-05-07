@@ -4,6 +4,7 @@ import os
 import time
 import re
 import json
+import sys
 from .schema import TooLongPromptError, LLMError
 from dotenv import load_dotenv
 
@@ -61,6 +62,14 @@ MODEL2PRICE = {
         "gemini-2.0-flash" : {
             "input" : 0.15 / 1e6,
             "output" : 0.40 / 1e6,
+            },
+        "gemini-2.5-flash-preview-04-17" : {
+            "input" : 0.15 / 1e6,
+            "output" : 0.60 / 1e6,
+            },
+        "gemini-2.5-pro-exp-03-25" : {
+            "input" : 1.25 / 1e6,
+            "output" : 2.50 / 1e6,
             },
         "gemini-1.5-pro-002" : {
             "input" : 1.25 / 1e6,
@@ -149,7 +158,8 @@ except Exception as e:
 try:
     from google import genai
     # setup Google AI Studio client
-    google_ai_client = genai.Client(api_key=os.getenv('GOOGLE_API_KEY'))
+    google_ai_client = genai.Client(api_key=os.environ.get('GOOGLE_API_KEY')) 
+    # google_ai_client = genai.Client(api_key=os.getenv('GOOGLE_API_KEY'))
 except Exception as e:
     print(e)
     print("Could not load Google AI API key from environment.")
@@ -248,6 +258,7 @@ def complete_text_gemini(prompt, stop_sequences=[], model="gemini-pro", max_toke
     # Load the model
     _model = "gemini-2.0-pro-exp-02-05" if model == "gemini-exp-1206" else model
     # Query the model
+    time.sleep(5)
     response = google_ai_client.models.generate_content(
         model=_model,
         contents=prompt
@@ -487,6 +498,7 @@ def complete_text(prompt, log_file, model, **kwargs):
             return completion
         except Exception as e:
             print(f"{model} attempt {retry} failed!")
+            print(f"Error details: {str(e)}", file=sys.stderr)
             error_msg = e
             time.sleep(WAIT_TIME)
 

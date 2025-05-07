@@ -1,0 +1,20 @@
+Namespace(task='product-recommendation', log_dir='logs/product-recommendation/gemini-2.5-flash-preview-04-17_device0_resumed_from__0507160521_49520', work_dir='workspace/product-recommendation/gemini-2.5-flash-preview-04-17_device0_resumed_from__0507160521_49520', max_steps=100000000.0, max_time=18000, max_api_cost=10, device=0, python='/opt/anaconda3/envs/product-recommendation/bin/python', interactive=False, resume='logs/product-recommendation/gemini-2.5-flash-preview-04-17/0507154601_49129/agent_log/agent_2_2.json', resume_step=0, agent_type='ResearchAgent', llm_name='gemini-2.5-flash-preview-04-17', fast_llm_name='gemini-2.5-flash-preview-04-17', feedback_llm_name='o1-preview', feedback_llm_max_tokens=4000, edit_script_llm_name='gemini-2.5-flash-preview-04-17', edit_script_llm_max_tokens=4000, agent_max_steps=50, actions_remove_from_prompt=[], actions_add_to_prompt=[], retrieval=False, valid_format_entires=None, max_steps_in_context=3, max_observation_steps_in_context=3, max_retries=5, langchain_agent='zero-shot-react-description')
+log_dir logs/product-recommendation/gemini-2.5-flash-preview-04-17_device0_resumed_from__0507160521_49520/env_log already exists
+Restoring workspace ing from logs/product-recommendation/gemini-2.5-flash-preview-04-17/0507154601_49129/agent_log/agent_2_2.json/env_log/traces/step_0_files
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/aniketh/TCS Research/MLRC-Bench/MLAgentBench/runner.py", line 87, in <module>
+    run(getattr(sys.modules[__name__], args.agent_type), args)
+  File "/Users/aniketh/TCS Research/MLRC-Bench/MLAgentBench/runner.py", line 21, in run
+    with Environment(args) as env:
+         ^^^^^^^^^^^^^^^^^
+  File "/Users/aniketh/TCS Research/MLRC-Bench/MLAgentBench/environment.py", line 58, in __init__
+    self._initialize_task_env() # set up work dir and log dir
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/aniketh/TCS Research/MLRC-Bench/MLAgentBench/environment.py", line 194, in _initialize_task_env
+    shutil.copytree(resume_dir, work_dir, symlinks=True)
+  File "/opt/anaconda3/lib/python3.12/shutil.py", line 598, in copytree
+    with os.scandir(src) as itr:
+         ^^^^^^^^^^^^^^^
+NotADirectoryError: [Errno 20] Not a directory: 'logs/product-recommendation/gemini-2.5-flash-preview-04-17/0507154601_49129/agent_log/agent_2_2.json/env_log/traces/step_0_files'

@@ -114,6 +114,7 @@ def list_files(dir_path, work_dir=".", max_length=10000, **kwargs):
     try:
         # avoid "\\"
         observation = subprocess.check_output(["ls", "-F", safe_path_join(work_dir, dir_path)]).decode("utf-8")
+        print(observation)
         
         # Truncate if observation exceeds max_length
         if len(observation) > max_length:

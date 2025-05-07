@@ -1,7 +1,7 @@
 echo "============ launch.sh Started at: $(date) ==============="
 
 source ~/.bashrc
-conda activate mlab
+# conda activate mlab
 
 TASK_ENV=$1 # llm-merging
 MODEL=$2 # o1-mini, model for implementing the idea
@@ -21,7 +21,9 @@ fi
 
 # ANCHORS=("ties" "dare" "emrmerging")
 # PYTHON_PATH="/home/yunxiang/.conda/envs/${TASK_ENV}/bin/python"
-PYTHON_PATH="/opt/anaconda3/envs/mlab"
+PYTHON_PATH="/opt/anaconda3/envs/product-recommendation/bin/python"
+# PYTHON_PATH="/opt/anaconda3/envs/mlab"
+
 
 if [ "$OPTION" ]; then
 	TASK=${TASK_ENV}--${OPTION}--${IDEA_PROPOSAL_MODEL}

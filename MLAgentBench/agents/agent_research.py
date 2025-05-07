@@ -2,9 +2,12 @@
 import os
 import sys
 import anthropic
+import json
+import glob
 from MLAgentBench.LLM import complete_text_fast, complete_text
 from MLAgentBench.schema import Action
 from .agent import Agent
+import time
 
 initial_prompt = """You are a helpful research assistant. You have access to the following tools:
 {tools_prompt}
@@ -23,7 +26,7 @@ Follow these instructions and do not forget them:
 - Highlight the supporting experiment results and reasoning before drawing any conclusions. 
 - Do not try installing any new packages or libraries.
 - If you believe you have solved the problem, you can use the Final Answer action to submit your solution with a valid evaluation score. You can only submit once, so make sure you've double-checked your answer and achieved the best possible performance before finalizing. 
-
+- Your response should only contain the fields: Reflection, Research Plan and Status, Fact Check, Thought, Action, and Action Input, as defined in the response format. Do not add any other fields, especially not an 'Observation' field. The actual observation will be provided to you by the system after your chosen action is executed.
 
 Always respond in this format exactly:
 {format_prompt}
@@ -55,6 +58,45 @@ class ResearchAgent(Agent):
         self.initial_prompt = initial_prompt.format(tools_prompt=self.tools_prompt, tool_names=self.prompt_tool_names,  task_description=env.research_problem, format_prompt="\n".join([f"{k}: {format_prompt_dict[k]}" for k in self.valid_format_entires]))
 
     def run(self, env):
+        agent_checkpoint_file_path = None
+        if self.args.resume:
+            if os.path.isfile(self.args.resume):
+                agent_checkpoint_file_path = self.args.resume
+            elif os.path.isdir(self.args.resume):
+                print(f"Resume path {self.args.resume} is a directory. Searching for agent checkpoint file...", file=sys.stderr)
+                # Search for agent_X_Y.json files in agent_log subdirectory, sort them to get the latest
+                agent_log_dir = os.path.join(self.args.resume, "agent_log")
+                if not os.path.isdir(agent_log_dir):
+                    print(f"Error: agent_log directory not found in {self.args.resume}. Cannot resume agent state.", file=sys.stderr)
+                else:
+                    checkpoints = sorted(
+                        glob.glob(os.path.join(agent_log_dir, "agent_*.json")),
+                        key=lambda f: tuple(map(int, os.path.basename(f).replace("agent_", "").replace(".json", "").split("_"))),
+                        reverse=True
+                    )
+                    if checkpoints:
+                        agent_checkpoint_file_path = checkpoints[0]
+                        print(f"Found agent checkpoint: {agent_checkpoint_file_path}", file=sys.stderr)
+                    else:
+                        print(f"No agent checkpoint files (agent_*.json) found in {agent_log_dir}. Cannot resume agent state.", file=sys.stderr)
+            else:
+                print(f"Resume path {self.args.resume} is not a valid file or directory. Starting fresh.", file=sys.stderr)
+
+        if agent_checkpoint_file_path and os.path.exists(agent_checkpoint_file_path):
+            print(f"Attempting to resume agent state from checkpoint: {agent_checkpoint_file_path}", file=sys.stderr)
+            try:
+                with open(agent_checkpoint_file_path, 'r') as f:
+                    checkpoint_data = json.load(f)
+                if 'history_steps' in checkpoint_data:
+                    self.history_steps = checkpoint_data['history_steps']
+                    print(f"Successfully loaded {len(self.history_steps)} history steps. Current step will be {len(self.history_steps)}.", file=sys.stderr)
+                else:
+                    print(f"Checkpoint file {agent_checkpoint_file_path} does not contain 'history_steps'. Starting fresh.", file=sys.stderr)
+            except Exception as e:
+                print(f"Error loading checkpoint {agent_checkpoint_file_path}: {e}. Starting fresh.", file=sys.stderr)
+        elif self.args.resume: # self.args.resume was set, but we couldn't find/load the agent file
+            print(f"Could not load agent state from resume path {self.args.resume}. Starting fresh.", file=sys.stderr)
+
         last_steps = self.args.max_steps_in_context
         last_observation_step = self.args.max_observation_steps_in_context
 
@@ -70,7 +112,7 @@ class ResearchAgent(Agent):
             ###########################################################
             #     construct prompt for LLM based on previous steps    #
             ###########################################################
-
+            time.sleep(5)
             prompt = self.initial_prompt
             if curr_step > last_steps:
                 if self.args.retrieval:
@@ -159,6 +201,9 @@ class ResearchAgent(Agent):
 
             if type(action_input) == dict:
                 observation = env.execute(Action(action, action_input))
+                # print(observation)
+                # with open(os.path.join(self.log_dir , "main_log"), "a", 1) as f:
+                #     f.write("Obs " + observation)
             else:
                 # parsing failed, give agent parsing error
                 usage = ",\n            ".join([f"{k}: [{v}]" for k, v in self.action_infos[action].usage.items()])
