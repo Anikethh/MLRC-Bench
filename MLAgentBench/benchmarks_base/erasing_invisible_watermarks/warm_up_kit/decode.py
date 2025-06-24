@@ -20,7 +20,7 @@ from dev import (
     encode_array_to_string,
 )
 
-dotenv.load_dotenv(override=False)
+dotenv.load_dotenv(override=True)
 warnings.filterwarnings("ignore")
 
 

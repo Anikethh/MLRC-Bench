@@ -30,7 +30,7 @@ from dev import (
 )
 from utils import to_tensor
 
-dotenv.load_dotenv(override=False)
+dotenv.load_dotenv(override=True)
 warnings.filterwarnings("ignore")
 logging.set_verbosity_error()
 

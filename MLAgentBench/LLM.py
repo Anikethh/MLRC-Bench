@@ -9,7 +9,8 @@ from .schema import TooLongPromptError, LLMError
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+# load_dotenv('../.env')
+load_dotenv(verbose=True, override=True)
 
 # https://openai.com/api/pricing/ as of 01/10/2025
 # https://aws.amazon.com/bedrock/pricing/ as of 01/20/2025
@@ -23,69 +24,25 @@ MODEL2PRICE = {
             "input" : 0.15 / 1e6,
             "output" : 0.6 / 1e6,
             },
-        "o1-mini" : {
-            "input" : 3 / 1e6,
-            "output" : 12 / 1e6,
-            },
-        "o3-mini" : {
-            "input" : 1.1 / 1e6,
-            "output" : 4.4 / 1e6,
-            },
-        "o1-preview" : {
-            "input" : 15 / 1e6,
-            "output" : 60 / 1e6,
-            },
-        "o1" : {
-            "input" : 15 / 1e6,
-            "output" : 60 / 1e6,
-            },
         "claude-3-5-sonnet-v2" : {
             "input" : 0.003 / 1000,
             "output" : 0.015 / 1000,
-            },
-        "claude-3-5-haiku" : {
-            "input" : 0.0008 / 1000,
-            "output" : 0.004 / 1000,
-            },
-        "claude-3-opus" : {
-            "input" : 0.015 / 1000,
-            "output" : 0.075 / 1000,
-            },
-        "gemini-exp-1206" : {
-            "input" : 0,
-            "output" : 0,
-            },
-        "gemini-2.0-flash-thinking-exp-0121" : {
-            "input" : 0,
-            "output" : 0,
             },
         "gemini-2.0-flash" : {
             "input" : 0.15 / 1e6,
             "output" : 0.40 / 1e6,
             },
-        "gemini-2.5-flash-preview-04-17" : {
+        "gemini-2.5-flash" : {
             "input" : 0.15 / 1e6,
             "output" : 0.60 / 1e6,
             },
-        "gemini-2.5-pro-exp-03-25" : {
+        "gemini-2.5-flash-lite-preview-06-17" : {
+            "input" : 0.15 / 1e6,
+            "output" : 0.60 / 1e6,
+            },
+        "gemini-2.5-pro" : {
             "input" : 1.25 / 1e6,
             "output" : 2.50 / 1e6,
-            },
-        "gemini-1.5-pro-002" : {
-            "input" : 1.25 / 1e6,
-            "output" : 5 / 1e6,
-            },
-        "gemini-1.5-flash-002" : {
-            "input" : 0.075 / 1e6,
-            "output" : 0.3 / 1e6,
-            },
-        "llama3-1-405b-instruct" : {
-            "input" : 0.0024 / 1000,
-            "output" : 0.0024 / 1000,
-            },
-        "llama3-3-70b-instruct" : {
-            "input" : 0.00072 / 1000,
-            "output" : 0.00072 / 1000,
             },
         "DeepSeek-R1" : {
             "input" : 0.55 / 1e6,
@@ -158,6 +115,7 @@ except Exception as e:
 try:
     from google import genai
     # setup Google AI Studio client
+    # print(os.environ.get('GOOGLE_API_KEY'))
     google_ai_client = genai.Client(api_key=os.environ.get('GOOGLE_API_KEY')) 
     # google_ai_client = genai.Client(api_key=os.getenv('GOOGLE_API_KEY'))
 except Exception as e:
